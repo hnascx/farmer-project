@@ -1,12 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ timestamps: true })
+@Schema({
+  timestamps: true,
+  toJSON: {
+    transform: (_, ret: { __v?: any }) => {
+      delete ret.__v;
+      return ret;
+    },
+  },
+})
 export class Farmer extends Document {
   @Prop({ required: true })
   fullName: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({
+    required: true,
+    unique: true,
+    set: (cpf: string) => cpf.replace(/[^\d]/g, ''),
+  })
   cpf: string;
 
   @Prop()
