@@ -90,9 +90,45 @@ export const createFarmerSchema = z.object({
     .default(true),
 });
 
-export const updateFarmerProfileSchema = createFarmerSchema
-  .omit({ cpf: true })
-  .partial()
+export const updateFarmerProfileSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(3, 'Nome completo deve ter no mínimo 3 caracteres')
+      .optional(),
+
+    birthDate: z
+      .string()
+      .refine((val) => {
+        if (val === '') return true; // Aceitar string vazia
+        if (!val) return true; // Aceitar undefined
+
+        // Validar formato
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+          return false;
+        }
+
+        // Validar data
+        const date = new Date(val);
+        const minDate = new Date(1900, 0, 1);
+        const now = new Date();
+        return !isNaN(date.getTime()) && date > minDate && date <= now;
+      }, 'Data deve estar entre 01/01/1900 e a data atual')
+      .optional(),
+
+    phone: z
+      .string()
+      .transform((val) => val.replace(/[^\d]/g, ''))
+      .refine((val) => {
+        if (!val) return true;
+        if (val.length !== 10 && val.length !== 11) return false;
+        const ddd = val.substring(0, 2);
+        return /^[1-9][0-9]$/.test(ddd);
+      }, 'Telefone inválido (deve ser um número válido com DDD)')
+      .optional(),
+
+    active: z.boolean().optional(),
+  })
   .strict();
 
 export type CreateFarmerDto = z.infer<typeof createFarmerSchema>;

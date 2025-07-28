@@ -50,6 +50,8 @@ export const farmerApi = {
 
   // Atualizar perfil do agricultor
   updateProfile: async (id: string, data: UpdateFarmerDTO): Promise<Farmer> => {
+    console.log("ID:", id) // Debug
+    console.log("Data enviada para API:", data) // Debug
     const response = await api.put(`/farmers/${id}/profile`, data)
     return response.data
   },

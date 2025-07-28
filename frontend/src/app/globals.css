@@ -119,4 +119,8 @@
   body {
     @apply bg-background text-foreground;
   }
+  input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px rgb(15 23 42) inset !important;
+    -webkit-text-fill-color: #fff !important;
+  }
 }
