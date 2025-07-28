@@ -17,22 +17,27 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { useLoading } from "@/contexts/loading-context"
 import { farmerApi } from "@/lib/api"
+import { defaultMessages, notifications } from "@/lib/notifications"
 import {
   createFarmerSchema,
   type CreateFarmerInput,
 } from "@/lib/schemas/farmer-schema"
+import { cn, maskCPF, maskPhone, unmask } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Plus } from "lucide-react"
+import { Calendar, Plus } from "lucide-react"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 
 interface CreateFarmerModalProps {
   onSuccess: () => void
+  className?: string
 }
 
-export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
+export function CreateFarmerModal({ onSuccess, className }: CreateFarmerModalProps) {
   const [open, setOpen] = useState(false)
+  const { showLoading, hideLoading } = useLoading()
 
   const form = useForm<CreateFarmerInput>({
     resolver: zodResolver(createFarmerSchema),
@@ -54,6 +59,7 @@ export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
 
   async function onSubmit(data: CreateFarmerInput) {
     try {
+      showLoading()
       const formattedData = {
         ...data,
         birthDate: data.birthDate || undefined,
@@ -64,19 +70,22 @@ export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
       form.reset()
       onSuccess()
       setOpen(false)
+      notifications.success(defaultMessages.create.success)
     } catch (error: any) {
       if (error.response?.data?.message === "CPF já cadastrado") {
         form.setError("cpf", { message: "CPF já cadastrado" })
         return
       }
-      console.error("Erro ao criar agricultor:", error)
+      notifications.error(defaultMessages.create.error)
+    } finally {
+      hideLoading()
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className={cn("justify-center sm:w-fit", className)}>
           <Plus className="mr-2 h-4 w-4" /> Novo Agricultor
         </Button>
       </DialogTrigger>
@@ -109,11 +118,12 @@ export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
                   <FormControl>
                     <Input
                       placeholder="Digite o CPF"
-                      maxLength={11}
+                      maxLength={14}
                       {...field}
+                      value={maskCPF(field.value)}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "")
-                        field.onChange(value)
+                        const unmasked = unmask(e.target.value)
+                        field.onChange(unmasked)
                       }}
                     />
                   </FormControl>
@@ -129,7 +139,24 @@ export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
                 <FormItem>
                   <FormLabel>Data de Nascimento</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} value={field.value || ""} />
+                    <div
+                      className="relative cursor-pointer"
+                      onClick={() => {
+                        const input = document.getElementById(
+                          "birth-date"
+                        ) as HTMLInputElement
+                        input?.showPicker()
+                      }}
+                    >
+                      <Input
+                        id="birth-date"
+                        type="date"
+                        {...field}
+                        value={field.value || ""}
+                        className="appearance-none pr-10 [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:absolute"
+                      />
+                      <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -145,12 +172,12 @@ export function CreateFarmerModal({ onSuccess }: CreateFarmerModalProps) {
                   <FormControl>
                     <Input
                       placeholder="Digite o telefone"
-                      maxLength={11}
+                      maxLength={15}
                       {...field}
-                      value={field.value || ""}
+                      value={maskPhone(field.value || "")}
                       onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, "")
-                        field.onChange(value)
+                        const unmasked = unmask(e.target.value)
+                        field.onChange(unmasked)
                       }}
                     />
                   </FormControl>

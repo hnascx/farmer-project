@@ -27,7 +27,6 @@ export const createFarmerSchema = z
           parsedDate <= today
         )
       }, "Data deve estar entre 01/01/1900 e hoje")
-      .or(z.literal(""))
       .optional(),
 
     phone: z

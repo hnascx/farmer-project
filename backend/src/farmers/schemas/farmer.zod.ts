@@ -98,22 +98,26 @@ export const updateFarmerProfileSchema = z
       .optional(),
 
     birthDate: z
-      .string()
-      .refine((val) => {
-        if (val === '') return true; // Aceitar string vazia
-        if (!val) return true; // Aceitar undefined
-
-        // Validar formato
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-          return false;
-        }
-
-        // Validar data
-        const date = new Date(val);
-        const minDate = new Date(1900, 0, 1);
-        const now = new Date();
-        return !isNaN(date.getTime()) && date > minDate && date <= now;
-      }, 'Data deve estar entre 01/01/1900 e a data atual')
+      .union([
+        z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD')
+          .transform((val) => {
+            // Forçar timezone para UTC
+            return new Date(`${val}T00:00:00.000Z`).toISOString().split('T')[0];
+          })
+          .refine((val) => {
+            const date = new Date(val + 'T00:00:00.000Z');
+            return !isNaN(date.getTime());
+          }, 'Data de nascimento inválida')
+          .refine((val) => {
+            const date = new Date(val + 'T00:00:00.000Z');
+            const minDate = new Date('1900-01-01T00:00:00.000Z');
+            const now = new Date();
+            return date > minDate && date <= now;
+          }, 'Data de nascimento deve estar entre 01/01/1900 e a data atual'),
+        z.undefined(),
+      ])
       .optional(),
 
     phone: z

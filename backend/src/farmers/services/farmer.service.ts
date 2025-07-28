@@ -32,11 +32,29 @@ export class FarmerService {
     const query = {};
 
     if (filters?.fullName) {
-      query['fullName'] = { $regex: filters.fullName, $options: 'i' };
+      // Primeiro tenta encontrar matches exatos começando com o texto digitado
+      const matchingFarmers = await this.farmerModel.find({
+        fullName: { $regex: `^${filters.fullName}`, $options: 'i' },
+      });
+
+      // Se não encontrar nenhum match, não aplica o filtro (retorna todos)
+      if (matchingFarmers.length > 0) {
+        query['fullName'] = { $regex: `^${filters.fullName}`, $options: 'i' };
+      }
     }
+
     if (filters?.cpf) {
-      query['cpf'] = { $regex: filters.cpf, $options: 'i' };
+      // Primeiro tenta encontrar matches exatos começando com o número digitado
+      const matchingFarmers = await this.farmerModel.find({
+        cpf: { $regex: `^${filters.cpf}` },
+      });
+
+      // Se não encontrar nenhum match, não aplica o filtro (retorna todos)
+      if (matchingFarmers.length > 0) {
+        query['cpf'] = { $regex: `^${filters.cpf}` };
+      }
     }
+
     if (filters?.active !== undefined) {
       query['active'] = filters.active;
     }
