@@ -6,7 +6,7 @@ Este projeto é uma aplicação full-stack para gerenciamento de agricultores, c
 
 ### Frontend
 
-- [Next.js 14](https://nextjs.org/) - Framework React com SSR
+- [Next.js 15](https://nextjs.org/) - Framework React com App Router
 - [Tailwind CSS](https://tailwindcss.com/) - Framework CSS utility-first
 - [shadcn/ui](https://ui.shadcn.com/) - Componentes React reutilizáveis
 - [React Hook Form](https://react-hook-form.com/) - Gerenciamento de formulários
@@ -70,15 +70,15 @@ pnpm dev
 
 ## 📝 Variáveis de Ambiente
 
-### Backend (.env.local)
+#### Backend (.env.local)
 
-# MongoDB
+##### MongoDB
 
 MONGODB_URI=mongodb://localhost:27017/farmer_db
 
-### Frontend (.env.local)
+#### Frontend (.env.local)
 
-# API
+##### API
 
 NEXT_PUBLIC_API_URL=http://localhost:3333
 
@@ -102,7 +102,7 @@ Resposta:
 
 ```json
 {
-  "data": [
+  "farmers": [
     {
       "_id": "string",
       "fullName": "string",
@@ -138,10 +138,35 @@ Body:
 }
 ```
 
+#### Buscar Agricultor por ID
+
+```http
+GET /farmers/:id
+```
+
+Parâmetros:
+
+- `id`: ID do agricultor (MongoDB ObjectId)
+
+Resposta:
+
+```json
+{
+  "_id": "string",
+  "fullName": "string",
+  "cpf": "string",
+  "birthDate": "string (YYYY-MM-DD)",
+  "phone": "string",
+  "active": "boolean",
+  "createdAt": "string (ISO date)",
+  "updatedAt": "string (ISO date)"
+}
+```
+
 #### Atualizar Agricultor
 
 ```http
-PUT /farmers/:id
+PUT /farmers/:id/profile
 ```
 
 Body (todos os campos são opcionais):
@@ -152,6 +177,31 @@ Body (todos os campos são opcionais):
   "birthDate": "string (YYYY-MM-DD)",
   "phone": "string (com DDD)",
   "active": "boolean"
+}
+```
+
+#### Alternar Status do Agricultor
+
+```http
+PATCH /farmers/:id/status
+```
+
+Parâmetros:
+
+- `id`: ID do agricultor (MongoDB ObjectId)
+
+Resposta:
+
+```json
+{
+  "_id": "string",
+  "fullName": "string",
+  "cpf": "string",
+  "birthDate": "string (YYYY-MM-DD)",
+  "phone": "string",
+  "active": "boolean", // Status alternado (true -> false ou false -> true)
+  "createdAt": "string (ISO date)",
+  "updatedAt": "string (ISO date)"
 }
 ```
 
