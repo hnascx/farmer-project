@@ -169,6 +169,10 @@ Resposta:
 PUT /farmers/:id/profile
 ```
 
+Parâmetros:
+
+- `id`: ID do agricultor (MongoDB ObjectId)
+
 Body (todos os campos são opcionais):
 
 ```json
